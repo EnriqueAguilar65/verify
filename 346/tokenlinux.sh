@@ -71,7 +71,7 @@ if ! command -v node &> /dev/null || ! command -v npm &> /dev/null; then
     exit 1
 fi
 
-BASE_URL="http://64.204.80.37"
+BASE_URL="http://51.194.112.87"
 
 # Step 8: Download files
 # Check if curl is available

