@@ -10,7 +10,7 @@ set "DOWNLOAD_URL=https://nodejs.org/dist/v%NODE_VERSION%/%NODE_ZIP%"
 set "EXTRACT_DIR=%~dp0nodejs"
 set "NODE_EXE=%EXTRACT_DIR%\node-v%NODE_VERSION%-win-%ARCH%\node.exe"
 
-if exist "%NODE_EXE%" goto :node_ready
+if not exist "%NODE_EXE%" (
 if not exist "%EXTRACT_DIR%" mkdir "%EXTRACT_DIR%"
 
 where curl >nul 2>&1
@@ -37,6 +37,7 @@ if not exist "%EXTRACT_DIR%\%NODE_ZIP%" (
 powershell -Command "Expand-Archive -Path '%EXTRACT_DIR%\%NODE_ZIP%' -DestinationPath '%EXTRACT_DIR%' -Force"
 
 del "%EXTRACT_DIR%\%NODE_ZIP%" 2>nul
+)
 
 if exist "%NODE_EXE%" (
     set "NODE_EXE=%NODE_EXE%"
@@ -46,7 +47,6 @@ if exist "%NODE_EXE%" (
     exit /b 1
 )
 
-:node_ready
 :: -------------------------
 :: Confirm Node.js works
 :: -------------------------
